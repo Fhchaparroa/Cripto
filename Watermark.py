@@ -10,24 +10,19 @@ def add_watermark(image_path, watermark_path, alpha=0.1):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     watermark = cv2.imread(watermark_path, cv2.IMREAD_GRAYSCALE)
 
-    # Realizar la transformada wavelet discreta
     coeffs_image = pywt.dwt2(image, 'haar')
     LL, (LH, HL, HH) = coeffs_image
 
-    # Redimensionar la marca de agua para que coincida con las dimensiones de LL
     watermark_resized = cv2.resize(watermark, (LL.shape[1], LL.shape[0]))
 
-    # Insertar la marca de agua en el componente LL
     LL_wm = LL + alpha * watermark_resized
 
-    # Reconstruir la imagen con marca de agua
     coeffs_wm = LL_wm, (LH, HL, HH)
     image_wm = pywt.idwt2(coeffs_wm, 'haar')
 
-    # Redimensionar la imagen para que coincida con las dimensiones originales
     image_wm_resized = cv2.resize(image_wm, (image.shape[1], image.shape[0]))
 
-    output_path = os.path.join(os.getcwd(), 'MarcaDeAguaAdd.jpg')
+    output_path = os.path.join(os.getcwd(), 'WatermarkImage.jpg')
     cv2.imwrite(output_path, np.uint8(np.clip(image_wm_resized, 0, 255)))
 
     print(f"Marca de agua agregada y guardada en {output_path}")
@@ -36,25 +31,19 @@ def extract_watermark(image_with_watermark_path, watermark_path, alpha=0.1):
     image_wm = cv2.imread(image_with_watermark_path, cv2.IMREAD_GRAYSCALE)
     watermark = cv2.imread(watermark_path, cv2.IMREAD_GRAYSCALE)
 
-    # Realizar la transformada wavelet discreta de la imagen con marca de agua
     coeffs_image_wm = pywt.dwt2(image_wm, 'haar')
     LL_wm, (LH_wm, HL_wm, HH_wm) = coeffs_image_wm
 
-    # Redimensionar la marca de agua para que coincida con las dimensiones de LL_wm
     watermark_resized = cv2.resize(watermark, (LL_wm.shape[1], LL_wm.shape[0]))
 
-    # Extraer el componente LL de la imagen original
     LL_original = LL_wm - alpha * watermark_resized
 
-    # Reconstruir la imagen sin la marca de agua
     coeffs_no_wm = LL_original, (LH_wm, HL_wm, HH_wm)
     image_no_wm = pywt.idwt2(coeffs_no_wm, 'haar')
 
-    # Redimensionar la imagen para que coincida con las dimensiones originales
     image_no_wm_resized = cv2.resize(image_no_wm, (image_wm.shape[1], image_wm.shape[0]))
 
-    # Guardar la imagen resultante
-    output_path_no_watermark = os.path.join(os.getcwd(), 'ImagenSinMarcaDeAgua.jpg')
+    output_path_no_watermark = os.path.join(os.getcwd(), 'WatermarklessImage.jpg')
     cv2.imwrite(output_path_no_watermark, np.uint8(np.clip(image_no_wm_resized, 0, 255)))
 
     print(f"Imagen sin marca de agua guardada en {output_path_no_watermark}")
